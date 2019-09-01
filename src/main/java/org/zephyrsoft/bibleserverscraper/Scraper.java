@@ -5,6 +5,7 @@ import static java.util.stream.Collectors.joining;
 import java.io.File;
 import java.io.IOException;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
 import java.util.LinkedList;
@@ -17,6 +18,7 @@ import org.zephyrsoft.bibleserverscraper.model.Book;
 import org.zephyrsoft.bibleserverscraper.model.BookChapter;
 import org.zephyrsoft.bibleserverscraper.model.Translation;
 
+import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.WebClient;
 import com.gargoylesoftware.htmlunit.html.DomNode;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
@@ -67,9 +69,13 @@ public class Scraper {
 			try {
 				LOG.debug("fetching {} in {}", bookChapter.getName(), translation);
 				String searchUrl = "https://www.bibleserver.com/text/" + translation + "/" + URLEncoder.encode(bookChapter.getName(), "UTF-8");
-				HtmlPage page = client.getPage(searchUrl);
+				Page page = client.getPage(searchUrl);
 
-				handleChapter(targetFile, page);
+				if (page.isHtmlPage()) {
+					handleChapter(targetFile, (HtmlPage)page);
+				} else {
+					LOG.warn("result was not HTML: {}", page.getWebResponse().getContentAsString(StandardCharsets.UTF_8));
+				}
 			} catch (Exception e) {
 				LOG.warn("error fetching " + bookChapter.getName() + " in " + translation, e);
 			}
@@ -94,7 +100,7 @@ public class Scraper {
 
 	private void sleepRandomTime() {
 		try {
-			int seconds = random.nextInt(5) + 1;
+			int seconds = random.nextInt(4) + 2;
 			LOG.debug("waiting for {} seconds", seconds);
 			Thread.sleep(seconds * 1000);
 		} catch (InterruptedException e) {
