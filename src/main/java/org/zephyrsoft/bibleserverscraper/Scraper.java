@@ -85,17 +85,20 @@ public class Scraper {
 
 	private void handleChapter(File targetFile, HtmlPage page) throws IOException {
 		List<DomNode> verses = page.<DomNode>getByXPath("//*[@class='chapter']/*[contains(@class,'verse')]");
-
-		List<String> versesText = new LinkedList<>();
-		for (DomNode verse : verses) {
-			String verseString = verse.<DomNode>getByXPath("./text()").stream()
-				.map(node -> node.asText())
-				.collect(joining(" "))
-				.replaceAll(" {2,}", " ")
-				.replaceAll("(\\w) ([\\.!\\?,;:])", "$1$2");
-			versesText.add(verseString);
+		if (verses.size() == 0) {
+			LOG.warn("no verses found, not writing file to disk");
+		} else {
+			List<String> versesText = new LinkedList<>();
+			for (DomNode verse : verses) {
+				String verseString = verse.<DomNode>getByXPath("./text()").stream()
+					.map(node -> node.asText())
+					.collect(joining(" "))
+					.replaceAll(" {2,}", " ")
+					.replaceAll("(\\w) ([\\.!\\?,;:])", "$1$2");
+				versesText.add(verseString);
+			}
+			Files.write(targetFile.toPath(), versesText, StandardOpenOption.CREATE_NEW);
 		}
-		Files.write(targetFile.toPath(), versesText, StandardOpenOption.CREATE_NEW);
 	}
 
 	private void sleepRandomTime() {
