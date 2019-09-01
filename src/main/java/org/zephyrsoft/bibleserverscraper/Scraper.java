@@ -5,6 +5,8 @@ import static java.util.stream.Collectors.joining;
 import java.net.URLEncoder;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.zephyrsoft.bibleserverscraper.model.Book;
 import org.zephyrsoft.bibleserverscraper.model.Translation;
 
@@ -13,6 +15,12 @@ import com.gargoylesoftware.htmlunit.html.DomNode;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 
 public class Scraper {
+	private static final Logger LOG = LoggerFactory.getLogger(Scraper.class);
+
+	public static void main(String args[]) {
+		Scraper scraper = new Scraper();
+		scraper.scrape();
+	}
 
 	// TODO parameter: target directory
 	public void scrape() {
@@ -25,11 +33,9 @@ public class Scraper {
 					scrapeChapter(client, translation, bookChapter);
 				});
 			});
-
 		}
 	}
 
-	// TODO sane logging (no println or printStackTrace anymore)
 	private void scrapeChapter(WebClient client, String translation, String bookChapter) {
 		// TODO scrape only if the target file doesn't exist yet
 		try {
@@ -38,7 +44,7 @@ public class Scraper {
 
 			handleChapter(translation, bookChapter, page);
 		} catch (Exception e) {
-			e.printStackTrace();
+			LOG.warn("error on " + bookChapter + " in " + translation, e);
 		}
 	}
 
@@ -46,14 +52,14 @@ public class Scraper {
 	private void handleChapter(String translation, String bookChapter, HtmlPage page) {
 		List<DomNode> verses = page.<DomNode>getByXPath("//*[@class='chapter']/*[contains(@class,'verse')]");
 
-		System.out.println("============= " + translation + " / " + bookChapter);
+		LOG.debug("============= {} / {}", translation, bookChapter);
 		for (DomNode verse : verses) {
 			String verseString = verse.<DomNode>getByXPath("./text()").stream()
 				.map(node -> node.asText())
 				.collect(joining(" "))
 				.replaceAll(" {2,}", " ")
 				.replaceAll("(\\w) ([\\.!\\?,;:])", "$1$2");
-			System.out.println(verseString);
+			LOG.debug(verseString);
 		}
 	}
 
