@@ -2,8 +2,14 @@ package org.zephyrsoft.bibleserverscraper;
 
 import static java.util.stream.Collectors.joining;
 
+import java.io.File;
+import java.io.IOException;
 import java.net.URLEncoder;
+import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Random;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,49 +23,80 @@ import com.gargoylesoftware.htmlunit.html.HtmlPage;
 public class Scraper {
 	private static final Logger LOG = LoggerFactory.getLogger(Scraper.class);
 
+	private Random random = new Random();
+
 	public static void main(String args[]) {
-		Scraper scraper = new Scraper();
-		scraper.scrape();
+		if (args.length < 1 || directoryNotCorrect(args[0])) {
+			LOG.error("please provide an existing target directory as first parameter");
+		} else {
+			Scraper scraper = new Scraper();
+			scraper.scrape(args[0]);
+		}
 	}
 
-	// TODO parameter: target directory
-	public void scrape() {
+	private static boolean directoryNotCorrect(String dir) {
+		File directory = new File(dir);
+		return !directory.exists() || !directory.isDirectory() || !directory.canWrite();
+	}
+
+	public void scrape(String directory) {
 		try (WebClient client = new WebClient()) {
 			client.getOptions().setCssEnabled(false);
 			client.getOptions().setJavaScriptEnabled(false);
+			client.getOptions().setHistoryPageCacheLimit(1);
 
 			Translation.abbreviations().forEach(translation -> {
 				Book.books().flatMap(book -> book.bookChapters()).forEach(bookChapter -> {
-					scrapeChapter(client, translation, bookChapter);
+					boolean shouldWait = scrapeChapter(directory, client, translation, bookChapter);
+					if (shouldWait) {
+						sleepRandomTime();
+					}
 				});
 			});
 		}
 	}
 
-	private void scrapeChapter(WebClient client, String translation, String bookChapter) {
-		// TODO scrape only if the target file doesn't exist yet
-		try {
-			String searchUrl = "https://www.bibleserver.com/text/" + translation + "/" + URLEncoder.encode(bookChapter, "UTF-8");
-			HtmlPage page = client.getPage(searchUrl);
+	private boolean scrapeChapter(String directory, WebClient client, String translation, String bookChapter) {
+		File targetFile = new File(directory + File.separator + translation + "-" + bookChapter + ".txt");
+		if (targetFile.exists()) {
+			LOG.debug("not fetching {} in {}, file {} exists", bookChapter, translation, targetFile);
+			return false;
+		} else {
+			try {
+				String searchUrl = "https://www.bibleserver.com/text/" + translation + "/" + URLEncoder.encode(bookChapter, "UTF-8");
+				HtmlPage page = client.getPage(searchUrl);
 
-			handleChapter(translation, bookChapter, page);
-		} catch (Exception e) {
-			LOG.warn("error on " + bookChapter + " in " + translation, e);
+				handleChapter(targetFile, translation, bookChapter, page);
+			} catch (Exception e) {
+				LOG.warn("error fetching " + bookChapter + " in " + translation, e);
+			}
+			return true;
 		}
 	}
 
-	// TODO write each chapter to a text file, one verse per line (rename or delete if an exception occurs)
-	private void handleChapter(String translation, String bookChapter, HtmlPage page) {
+	private void handleChapter(File targetFile, String translation, String bookChapter, HtmlPage page) throws IOException {
 		List<DomNode> verses = page.<DomNode>getByXPath("//*[@class='chapter']/*[contains(@class,'verse')]");
 
 		LOG.debug("============= {} / {}", translation, bookChapter);
+		List<String> versesText = new LinkedList<>();
 		for (DomNode verse : verses) {
 			String verseString = verse.<DomNode>getByXPath("./text()").stream()
 				.map(node -> node.asText())
 				.collect(joining(" "))
 				.replaceAll(" {2,}", " ")
 				.replaceAll("(\\w) ([\\.!\\?,;:])", "$1$2");
-			LOG.debug(verseString);
+			versesText.add(verseString);
+		}
+		Files.write(targetFile.toPath(), versesText, StandardOpenOption.CREATE_NEW);
+	}
+
+	private void sleepRandomTime() {
+		try {
+			int seconds = random.nextInt(5) + 1;
+			LOG.debug("waiting for {} seconds", seconds);
+			Thread.sleep(seconds * 1000);
+		} catch (InterruptedException e) {
+			// do nothing
 		}
 	}
 
