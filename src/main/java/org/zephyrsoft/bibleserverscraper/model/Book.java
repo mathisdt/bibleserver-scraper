@@ -84,12 +84,16 @@ public enum Book {
 		this.chapters = chapters;
 	}
 
-	public Stream<String> bookChapters() {
+	public String getOrdinal() {
+		return name().replace("_", "");
+	}
+
+	public Stream<BookChapter> bookChapters() {
 		if (chapters == 1) {
-			return Stream.of(name);
+			return Stream.of(new BookChapter(this, name));
 		} else {
 			return IntStream.range(1, chapters + 1)
-				.mapToObj(chapter -> name + chapter);
+				.mapToObj(chapter -> new BookChapter(this, name + chapter));
 		}
 	}
 

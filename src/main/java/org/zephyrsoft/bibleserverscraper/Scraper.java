@@ -14,6 +14,7 @@ import java.util.Random;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.zephyrsoft.bibleserverscraper.model.Book;
+import org.zephyrsoft.bibleserverscraper.model.BookChapter;
 import org.zephyrsoft.bibleserverscraper.model.Translation;
 
 import com.gargoylesoftware.htmlunit.WebClient;
@@ -56,28 +57,29 @@ public class Scraper {
 		}
 	}
 
-	private boolean scrapeChapter(String directory, WebClient client, String translation, String bookChapter) {
-		File targetFile = new File(directory + File.separator + translation + "-" + bookChapter + ".txt");
+	private boolean scrapeChapter(String directory, WebClient client, String translation, BookChapter bookChapter) {
+		File targetFile = new File(directory + File.separator + translation + "-" +
+			bookChapter.getBook().getOrdinal() + "-" + bookChapter.getName() + ".txt");
 		if (targetFile.exists()) {
-			LOG.debug("not fetching {} in {}, file {} exists", bookChapter, translation, targetFile);
+			LOG.debug("not fetching {} in {}, file {} exists", bookChapter.getName(), translation, targetFile);
 			return false;
 		} else {
 			try {
-				String searchUrl = "https://www.bibleserver.com/text/" + translation + "/" + URLEncoder.encode(bookChapter, "UTF-8");
+				LOG.debug("fetching {} in {}", bookChapter.getName(), translation);
+				String searchUrl = "https://www.bibleserver.com/text/" + translation + "/" + URLEncoder.encode(bookChapter.getName(), "UTF-8");
 				HtmlPage page = client.getPage(searchUrl);
 
-				handleChapter(targetFile, translation, bookChapter, page);
+				handleChapter(targetFile, page);
 			} catch (Exception e) {
-				LOG.warn("error fetching " + bookChapter + " in " + translation, e);
+				LOG.warn("error fetching " + bookChapter.getName() + " in " + translation, e);
 			}
 			return true;
 		}
 	}
 
-	private void handleChapter(File targetFile, String translation, String bookChapter, HtmlPage page) throws IOException {
+	private void handleChapter(File targetFile, HtmlPage page) throws IOException {
 		List<DomNode> verses = page.<DomNode>getByXPath("//*[@class='chapter']/*[contains(@class,'verse')]");
 
-		LOG.debug("============= {} / {}", translation, bookChapter);
 		List<String> versesText = new LinkedList<>();
 		for (DomNode verse : verses) {
 			String verseString = verse.<DomNode>getByXPath("./text()").stream()
