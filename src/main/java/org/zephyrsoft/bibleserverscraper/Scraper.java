@@ -48,7 +48,7 @@ public class Scraper {
 			client.getOptions().setJavaScriptEnabled(false);
 			client.getOptions().setHistoryPageCacheLimit(1);
 
-			Translation.abbreviations().forEach(translation -> {
+			Translation.forEach(translation -> {
 				Book.books().flatMap(book -> book.bookChapters()).forEach(bookChapter -> {
 					boolean shouldWait = scrapeChapter(directory, client, translation, bookChapter);
 					if (shouldWait) {
@@ -59,17 +59,20 @@ public class Scraper {
 		}
 	}
 
-	private boolean scrapeChapter(String directory, WebClient client, String translation, BookChapter bookChapter) {
-		File targetFile = new File(directory + File.separator + translation + "-" +
-			bookChapter.getBook().getOrdinal() + "-" + bookChapter.getName() + ".txt");
+	private boolean scrapeChapter(String directory, WebClient client, Translation translation, BookChapter bookChapter) {
+		String translationAbbreviation = translation.getAbbreviation();
+		String bookChapterName = translation.nameOf(bookChapter);
+
+		File targetFile = new File(directory + File.separator + translationAbbreviation + "-" +
+			bookChapter.getBook().getOrdinal() + "-" + bookChapter.getNameGerman() + ".txt"); // files always named in German
 		if (targetFile.exists()) {
-			LOG.debug("not fetching {} in {}, file {} exists", bookChapter.getName(), translation, targetFile);
+			LOG.debug("not fetching {} in {}, file {} exists", bookChapterName, translationAbbreviation, targetFile);
 			return false;
 		} else {
 			try {
-				LOG.debug("fetching {} in {}", bookChapter.getName(), translation);
-				String searchUrl = "https://www.bibleserver.com/text/" + URLEncoder.encode(translation, "UTF-8")
-					+ "/" + URLEncoder.encode(bookChapter.getName(), "UTF-8");
+				LOG.debug("fetching {} in {}", bookChapterName, translationAbbreviation);
+				String searchUrl = "https://www.bibleserver.com/text/" + URLEncoder.encode(translationAbbreviation, "UTF-8")
+					+ "/" + URLEncoder.encode(bookChapterName, "UTF-8");
 				Page page = client.getPage(searchUrl);
 
 				if (page.isHtmlPage()) {
@@ -78,7 +81,7 @@ public class Scraper {
 					LOG.warn("result was not HTML: {}", page.getWebResponse().getContentAsString(StandardCharsets.UTF_8));
 				}
 			} catch (Exception e) {
-				LOG.warn("error fetching " + bookChapter.getName() + " in " + translation, e);
+				LOG.warn("error fetching " + bookChapterName + " in " + translationAbbreviation, e);
 			}
 			return true;
 		}
@@ -104,7 +107,7 @@ public class Scraper {
 
 	private void sleepRandomTime() {
 		try {
-			int seconds = random.nextInt(4) + 2;
+			int seconds = random.nextInt(3) + 5;
 			LOG.debug("waiting for {} seconds", seconds);
 			Thread.sleep(seconds * 1000);
 		} catch (InterruptedException e) {
