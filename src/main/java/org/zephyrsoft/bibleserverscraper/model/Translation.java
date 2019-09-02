@@ -7,7 +7,7 @@ public enum Translation {
 	ELB("ELB"),
 	LUT("LUT"),
 	SLT("SLT"),
-	NGUE("NGÜ"),
+	NLB("NLB"),
 	KJV("KJV");
 
 	private String abbreviation;
