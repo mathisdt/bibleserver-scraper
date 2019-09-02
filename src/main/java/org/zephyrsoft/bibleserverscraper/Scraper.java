@@ -68,7 +68,8 @@ public class Scraper {
 		} else {
 			try {
 				LOG.debug("fetching {} in {}", bookChapter.getName(), translation);
-				String searchUrl = "https://www.bibleserver.com/text/" + translation + "/" + URLEncoder.encode(bookChapter.getName(), "UTF-8");
+				String searchUrl = "https://www.bibleserver.com/text/" + URLEncoder.encode(translation, "UTF-8")
+					+ "/" + URLEncoder.encode(bookChapter.getName(), "UTF-8");
 				Page page = client.getPage(searchUrl);
 
 				if (page.isHtmlPage()) {
