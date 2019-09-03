@@ -11,11 +11,13 @@ import java.nio.file.StandardOpenOption;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.zephyrsoft.bibleserverscraper.model.Book;
 import org.zephyrsoft.bibleserverscraper.model.BookChapter;
+import org.zephyrsoft.bibleserverscraper.model.ChapterScrapeResult;
 import org.zephyrsoft.bibleserverscraper.model.Translation;
 
 import com.gargoylesoftware.htmlunit.Page;
@@ -28,38 +30,30 @@ public class Scraper {
 
 	private Random random = new Random();
 
-	public static void main(String args[]) {
-		if (args.length < 1 || directoryNotCorrect(args[0])) {
-			LOG.error("please provide an existing target directory as first parameter");
-		} else {
-			Scraper scraper = new Scraper();
-			scraper.scrape(args[0]);
-		}
-	}
-
-	private static boolean directoryNotCorrect(String dir) {
-		File directory = new File(dir);
-		return !directory.exists() || !directory.isDirectory() || !directory.canWrite();
-	}
-
 	public void scrape(String directory) {
 		try (WebClient client = new WebClient()) {
 			client.getOptions().setCssEnabled(false);
 			client.getOptions().setJavaScriptEnabled(false);
 			client.getOptions().setHistoryPageCacheLimit(1);
 
-			Translation.forEach(translation -> {
-				Book.books().flatMap(book -> book.bookChapters()).forEach(bookChapter -> {
-					boolean shouldWait = scrapeChapter(directory, client, translation, bookChapter);
-					if (shouldWait) {
-						sleepRandomTime();
-					}
+			AtomicBoolean allScrapedSuccessfully = new AtomicBoolean(true);
+			do {
+				Translation.forEach(translation -> {
+					Book.books().flatMap(book -> book.bookChapters()).forEach(bookChapter -> {
+						ChapterScrapeResult chapterScrapeResult = scrapeChapter(directory, client, translation, bookChapter);
+						if (!chapterScrapeResult.wasSuccessful()) {
+							allScrapedSuccessfully.set(false);
+						}
+						if (chapterScrapeResult.shouldWait()) {
+							sleepRandomTime();
+						}
+					});
 				});
-			});
+			} while (!allScrapedSuccessfully.get());
 		}
 	}
 
-	private boolean scrapeChapter(String directory, WebClient client, Translation translation, BookChapter bookChapter) {
+	private ChapterScrapeResult scrapeChapter(String directory, WebClient client, Translation translation, BookChapter bookChapter) {
 		String translationAbbreviation = translation.getAbbreviation();
 		String bookChapterName = translation.nameOf(bookChapter);
 
@@ -67,7 +61,7 @@ public class Scraper {
 			bookChapter.getBook().getOrdinal() + "-" + bookChapter.getNameGerman() + ".txt"); // files always named in German
 		if (targetFile.exists()) {
 			LOG.debug("not fetching {} in {}, file {} exists", bookChapterName, translationAbbreviation, targetFile);
-			return false;
+			return new ChapterScrapeResult(false, true);
 		} else {
 			try {
 				LOG.debug("fetching {} in {}", bookChapterName, translationAbbreviation);
@@ -77,20 +71,22 @@ public class Scraper {
 
 				if (page.isHtmlPage()) {
 					handleChapter(targetFile, (HtmlPage)page);
+					return new ChapterScrapeResult(true, true);
 				} else {
 					LOG.warn("result was not HTML: {}", page.getWebResponse().getContentAsString(StandardCharsets.UTF_8));
+					return new ChapterScrapeResult(true, false);
 				}
 			} catch (Exception e) {
 				LOG.warn("error fetching " + bookChapterName + " in " + translationAbbreviation, e);
+				return new ChapterScrapeResult(true, false);
 			}
-			return true;
 		}
 	}
 
 	private void handleChapter(File targetFile, HtmlPage page) throws IOException {
 		List<DomNode> verses = page.<DomNode>getByXPath("//*[@class='chapter']/*[contains(@class,'verse')]");
 		if (verses.size() == 0) {
-			LOG.warn("no verses found, not writing file to disk");
+			throw new IllegalStateException("no verses found");
 		} else {
 			List<String> versesText = new LinkedList<>();
 			for (DomNode verse : verses) {
