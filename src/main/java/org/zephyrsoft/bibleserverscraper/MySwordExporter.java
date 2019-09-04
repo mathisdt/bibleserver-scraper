@@ -30,15 +30,17 @@ public class MySwordExporter {
 		Translation.forEach(translation -> {
 			String filename = sqliteFileName(myswordDirectory, translation);
 			try (Connection connection = open(filename)) {
-				if (connection==null) {
-					LOG.debug("not writing {}, file {} exists", translation.getAbbreviation(), sqliteFileName(myswordDirectory, translation));
+				if (connection == null) {
+					LOG.debug("not writing {}, file {} exists", translation.getAbbreviation(),
+						sqliteFileName(myswordDirectory, translation));
 				} else {
 					init(connection, translation);
 					writeContent(connection, translation, rawDirectory);
 				}
 			} catch (Exception e) {
 				new File(filename).delete();
-				LOG.warn("error writing " + translation.getAbbreviation() + ", deleted partly-finished file " + filename, e);
+				LOG.warn(
+					"error writing " + translation.getAbbreviation() + ", deleted partly-finished file " + filename, e);
 			}
 		});
 	}
