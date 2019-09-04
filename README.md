@@ -1,10 +1,10 @@
 # bibleserver-scraper
 
 This tool can package content from bibleserver.com nicely:
-1. as MySword Bible modules
+1. as [MySword Bible](https://www.mysword.info) modules
 2. as side-by-side, verse-by-verse translation comparison
 
-**Please respect the copyright and don't publish bible texts without consent of the publishers!**
+**Please respect the copyright and don't publish bible texts anywhere without consent of the publishers!**
 
 ## Usage
 
