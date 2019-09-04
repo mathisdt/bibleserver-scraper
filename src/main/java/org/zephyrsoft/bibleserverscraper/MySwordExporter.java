@@ -28,7 +28,8 @@ public class MySwordExporter {
 
 	public void export(String rawDirectory, String myswordDirectory) {
 		Translation.forEach(translation -> {
-			try (Connection connection = open(myswordDirectory, translation)) {
+			String filename = sqliteFileName(myswordDirectory, translation);
+			try (Connection connection = open(filename)) {
 				if (connection==null) {
 					LOG.debug("not writing {}, file {} exists", translation.getAbbreviation(), sqliteFileName(myswordDirectory, translation));
 				} else {
@@ -36,13 +37,13 @@ public class MySwordExporter {
 					writeContent(connection, translation, rawDirectory);
 				}
 			} catch (Exception e) {
-				LOG.warn("error writing " + translation.getAbbreviation(), e);
+				new File(filename).delete();
+				LOG.warn("error writing " + translation.getAbbreviation() + ", deleted partly-finished file " + filename, e);
 			}
 		});
 	}
 
-	private Connection open(String directory, Translation translation) throws SQLException {
-		String filename = sqliteFileName(directory, translation);
+	private Connection open(String filename) throws SQLException {
 		File file = new File(filename);
 		if (file.exists()) {
 			return null;
