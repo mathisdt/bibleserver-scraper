@@ -12,27 +12,22 @@ public class Starter {
 		if (args.length < 1 || directoryNotCorrect(args[0])) {
 			LOG.error("please provide an existing target directory as first parameter");
 		} else {
-			Scraper scraper = new Scraper();
 			String mainDirectory = args[0];
 			String rawDirectory = subdir(mainDirectory, "raw");
 			String mySwordDirectory = subdir(mainDirectory, "mysword");
 			String latexDirectory = subdir(mainDirectory, "latex");
 
+			// fetch the data
+			Scraper scraper = new Scraper();
 			scraper.scrape(rawDirectory);
 
-			// TODO create SQLite3 database in mySwordDirectory for each translation
-//			sqlite> .schema bible
-//			CREATE TABLE IF NOT EXISTS "Bible" ("Book" INT,"Chapter" INT,"Verse" INT,"Scripture" TEXT);
-//			CREATE UNIQUE INDEX "bible_key" ON "Bible" ("Book" ASC, "Chapter" ASC, "Verse" ASC);
-//			sqlite> select * from bible limit 1;
-//			1|1|1|Im Anfang schuf Gott die Himmel und die Erde.
-//			sqlite> .schema details
-//			CREATE TABLE IF NOT EXISTS "Details" ("Description" NVARCHAR(255),"Abbreviation" NVARCHAR(50),"Comments" TEXT,"Version" TEXT, "VersionDate" DATETIME, "PublishDate" DATETIME,"RightToLeft" BOOL,"OT" BOOL,"NT" BOOL,"Strong" BOOL);
-//			sqlite> select * from details;
-//			Elberfelder Übersetzung von 1871|Elb1871|Elberfelder Übersetzung von 1871.|1.0|2009-06-15 00:00:00||0|1|1|0
+			// export bibles in MySword format
+			MySwordExporter mySwordExporter = new MySwordExporter();
+			mySwordExporter.export(rawDirectory, mySwordDirectory);
 
-			// TODO create A4-Landscape LaTeX sources for each verse, comparing the translations, in latexDirectory
-
+			// export LaTeX document for comparing the translations
+			LaTeXExporter latexExporter = new LaTeXExporter();
+			latexExporter.export(rawDirectory, latexDirectory);
 		}
 	}
 

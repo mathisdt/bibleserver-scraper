@@ -86,16 +86,24 @@ public enum Book {
 		this.chapters = chapters;
 	}
 
+	public String getNameGerman() {
+		return nameGerman;
+	}
+
 	public String getOrdinal() {
 		return name().replace("_", "");
 	}
 
+	public int getOrdinalNumber() {
+		return Integer.parseInt(getOrdinal());
+	}
+
 	public Stream<BookChapter> bookChapters() {
 		if (chapters == 1) {
-			return Stream.of(new BookChapter(this, nameGerman, nameEnglish));
+			return Stream.of(new BookChapter(this, 1, nameGerman, nameEnglish));
 		} else {
 			return IntStream.range(1, chapters + 1)
-				.mapToObj(chapter -> new BookChapter(this, nameGerman + chapter, nameEnglish + chapter));
+				.mapToObj(chapter -> new BookChapter(this, chapter, nameGerman + chapter, nameEnglish + chapter));
 		}
 	}
 

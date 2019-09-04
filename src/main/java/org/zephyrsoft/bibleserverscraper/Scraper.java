@@ -97,7 +97,7 @@ public class Scraper {
 					.replaceAll("(\\w) ([\\.!\\?,;:])", "$1$2");
 				versesText.add(verseString);
 			}
-			Files.write(targetFile.toPath(), versesText, StandardOpenOption.CREATE_NEW);
+			Files.write(targetFile.toPath(), versesText, StandardCharsets.UTF_8, StandardOpenOption.CREATE_NEW);
 		}
 	}
 
