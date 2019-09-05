@@ -22,6 +22,12 @@ public class BookChapter {
 		return chapter;
 	}
 
+	public String getPrintNameGerman() {
+		return getNameGerman()
+			.replaceAll("^([1-5]\\.)([A-Z])", "$1 $2")
+			.replaceAll("([a-z])([0-9]+)$", "$1 $2");
+	}
+
 	public String getNameGerman() {
 		return nameGerman;
 	}

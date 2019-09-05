@@ -90,6 +90,11 @@ public enum Book {
 		return nameGerman;
 	}
 
+	public String getPrintNameGerman() {
+		return getNameGerman()
+			.replaceAll("^([1-5]\\.)([A-Z])", "$1 $2");
+	}
+
 	public String getOrdinal() {
 		return name().replace("_", "");
 	}

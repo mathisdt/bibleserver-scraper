@@ -9,8 +9,8 @@ public enum Translation {
 	ELB("ELB", "Elberfelder", BookChapter::getNameGerman),
 	LUT("LUT", "Luther", BookChapter::getNameGerman),
 	SLT("SLT", "Schlachter", BookChapter::getNameGerman),
-	NLB("NLB", "Neues Leben Bibel", BookChapter::getNameGerman),
-	KJV("KJV", "King James Version", BookChapter::getNameEnglish);
+	NLB("NLB", "Neues Leben", BookChapter::getNameGerman),
+	KJV("KJV", "King James", BookChapter::getNameEnglish);
 
 	private String abbreviation;
 	private String name;
@@ -38,7 +38,11 @@ public enum Translation {
 		return abbreviation + "-" + bookChapter.getBook().getOrdinal() + "-" + bookChapter.getNameGerman() + ".txt";
 	}
 
+	public static Stream<Translation> stream() {
+		return Stream.of(values());
+	}
+
 	public static void forEach(Consumer<Translation> action) {
-		Stream.of(values()).forEach(action);
+		stream().forEach(action);
 	}
 }
