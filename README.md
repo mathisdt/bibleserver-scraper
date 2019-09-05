@@ -4,6 +4,8 @@ This tool can package content from bibleserver.com nicely:
 1. as [MySword Bible](https://www.mysword.info) modules
 2. as side-by-side, verse-by-verse translation comparison
 
+The latter comes with a bonus feature you can't buy in any print bible (or at least I couldn't find one): no headings! Very useful if you want to read the bible without being influenced beforehand about what to expect.
+
 **Please respect the copyright and don't publish bible texts anywhere without consent of the publishers!**
 
 ## Usage
