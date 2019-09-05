@@ -10,7 +10,7 @@ The latter comes with a bonus feature you can't buy in any print bible (or at le
 
 ## Usage
 
-Start the released JAR with an (empty) directory as parameter, e.g.
+Start the released JAR using Java 11 or above with an (empty) directory as parameter, e.g.
 
 `java -jar bibleserver-scraper-1.0.0-SNAPSHOT.jar /home/username/bibles`
 
