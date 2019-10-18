@@ -8,7 +8,6 @@ public enum Translation {
 
 	ELB("ELB", "Elberfelder", BookChapter::getNameGerman),
 	LUT("LUT", "Luther", BookChapter::getNameGerman),
-	SLT("SLT", "Schlachter", BookChapter::getNameGerman),
 	NLB("NLB", "Neues Leben", BookChapter::getNameGerman),
 	KJV("KJV", "King James", BookChapter::getNameEnglish);
 
