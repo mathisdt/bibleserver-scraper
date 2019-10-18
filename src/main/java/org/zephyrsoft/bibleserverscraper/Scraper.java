@@ -38,8 +38,9 @@ public class Scraper {
 
 			AtomicBoolean allScrapedSuccessfully = new AtomicBoolean(true);
 			do {
-				Translation.forEach(translation -> {
-					Book.books().flatMap(book -> book.bookChapters()).forEach(bookChapter -> {
+				Translation.forEach(translation -> Book.books()
+					.flatMap(book -> book.bookChapters())
+					.forEach(bookChapter -> {
 						ChapterScrapeResult chapterScrapeResult = scrapeChapter(directory, client, translation, bookChapter);
 						if (!chapterScrapeResult.wasSuccessful()) {
 							allScrapedSuccessfully.set(false);
@@ -47,8 +48,7 @@ public class Scraper {
 						if (chapterScrapeResult.shouldWait()) {
 							sleepRandomTime();
 						}
-					});
-				});
+					}));
 			} while (!allScrapedSuccessfully.get());
 		}
 	}
@@ -84,8 +84,8 @@ public class Scraper {
 	}
 
 	private void handleChapter(File targetFile, HtmlPage page) throws IOException {
-		List<DomNode> verses = page.<DomNode>getByXPath("//*[@class='chapter']/*[contains(@class,'verse')]");
-		if (verses.size() == 0) {
+		List<DomNode> verses = page.<DomNode>getByXPath("//*[contains(@class,'chapter')]//*[contains(@class,'verse-content--hover')]");
+		if (verses.isEmpty()) {
 			throw new IllegalStateException("no verses found");
 		} else {
 			List<String> versesText = new LinkedList<>();
