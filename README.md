@@ -14,12 +14,12 @@ Start the released JAR using Java 11 or above with an (empty) directory as param
 
 `java -jar bibleserver-scraper-1.0.0-SNAPSHOT.jar /home/username/bibles`
 
-It will show you on the standard output what it does. If all goes well, it will create five MySword bible modules
-(ELB, LUT, SLT, NLB and KJV) and a LaTeX source file for the translation comparison (more below).
+It will show you on the standard output what it does. If all goes well, it will create four MySword bible modules
+(ELB, LUT, NLB and KJV) and a LaTeX source file for the translation comparison (more below).
 
 ## MySword Bible modules
 
-You have to copy the resulting files to your device, either by mailing them to yourself or via Android Debug Bridge:
+You have to copy the resulting files to your device, either by mailing them to yourself or via [Android Debug Bridge](https://developer.android.com/studio/command-line/adb):
 
 `adb push *.mybible /storage/emulated/0/mysword/bibles`
 
