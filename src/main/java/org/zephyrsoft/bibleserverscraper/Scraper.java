@@ -8,7 +8,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -88,7 +88,7 @@ public class Scraper {
 		if (verses.isEmpty()) {
 			throw new IllegalStateException("no verses found");
 		} else {
-			List<String> versesText = new LinkedList<>();
+			List<String> versesText = new ArrayList<>();
 			for (DomNode verse : verses) {
 				String verseString = verse.<DomNode>getByXPath("./text()").stream()
 					.map(node -> node.asText())
