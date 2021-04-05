@@ -91,7 +91,7 @@ public class Scraper {
 			List<String> versesText = new ArrayList<>();
 			for (DomNode verse : verses) {
 				String verseString = verse.<DomNode>getByXPath("./text()").stream()
-					.map(node -> node.asText())
+					.map(node -> node.asNormalizedText())
 					.collect(joining(" "))
 					.replaceAll(" {2,}", " ")
 					.replaceAll("(\\w) ([\\.!\\?,;:])", "$1$2");
