@@ -15,7 +15,7 @@
 	</licenses>
 
 	<properties>
-		<slf4j.version>1.7.31</slf4j.version>
+		<slf4j.version>1.7.32</slf4j.version>
 
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven.compiler.target>11</maven.compiler.target>
