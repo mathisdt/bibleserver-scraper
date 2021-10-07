@@ -1,7 +1,5 @@
 package org.zephyrsoft.bibleserverscraper;
 
-import static java.util.stream.Collectors.toList;
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -26,7 +24,7 @@ public class MySwordExporter {
 
 	private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
-	public void export(String rawDirectory, String myswordDirectory) {
+	public void export(final String rawDirectory, final String myswordDirectory) {
 		Translation.forEach(translation -> {
 			String filename = sqliteFileName(myswordDirectory, translation);
 			try (Connection connection = open(filename)) {
@@ -45,7 +43,7 @@ public class MySwordExporter {
 		});
 	}
 
-	private Connection open(String filename) throws SQLException {
+	private Connection open(final String filename) throws SQLException {
 		File file = new File(filename);
 		if (file.exists()) {
 			return null;
@@ -53,11 +51,11 @@ public class MySwordExporter {
 		return DriverManager.getConnection("jdbc:sqlite:" + filename);
 	}
 
-	private String sqliteFileName(String directory, Translation translation) {
+	private String sqliteFileName(final String directory, final Translation translation) {
 		return directory + File.separator + translation.getAbbreviation() + ".bbl.mybible";
 	}
 
-	private void init(Connection connection, Translation translation) throws SQLException {
+	private void init(final Connection connection, final Translation translation) throws SQLException {
 		try (Statement statement = connection.createStatement()) {
 			statement.addBatch(
 				"CREATE TABLE \"Bible\" (\"Book\" INT,\"Chapter\" INT,\"Verse\" INT,\"Scripture\" TEXT);");
@@ -77,12 +75,12 @@ public class MySwordExporter {
 		}
 	}
 
-	private void writeContent(Connection connection, Translation translation, String rawDirectory)
+	private void writeContent(final Connection connection, final Translation translation, final String rawDirectory)
 		throws SQLException, IOException {
 		try (PreparedStatement statement = connection.prepareStatement(
 			"INSERT INTO \"Bible\" (\"Book\",\"Chapter\",\"Verse\",\"Scripture\") VALUES (?,?,?,?);")) {
 			for (Book book : Book.values()) {
-				for (BookChapter bookChapter : book.bookChapters().collect(toList())) {
+				for (BookChapter bookChapter : book.bookChapters().toList()) {
 					File versesFile = new File(rawDirectory + File.separator + translation.fileNameOf(bookChapter));
 					List<String> verses = Files.readAllLines(versesFile.toPath(), StandardCharsets.UTF_8);
 
