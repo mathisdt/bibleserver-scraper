@@ -20,10 +20,10 @@ import org.zephyrsoft.bibleserverscraper.model.BookChapter;
 import org.zephyrsoft.bibleserverscraper.model.ChapterScrapeResult;
 import org.zephyrsoft.bibleserverscraper.model.Translation;
 
-import com.gargoylesoftware.htmlunit.Page;
-import com.gargoylesoftware.htmlunit.WebClient;
-import com.gargoylesoftware.htmlunit.html.DomNode;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import org.htmlunit.Page;
+import org.htmlunit.WebClient;
+import org.htmlunit.html.DomNode;
+import org.htmlunit.html.HtmlPage;
 
 public class Scraper {
 	private static final Logger LOG = LoggerFactory.getLogger(Scraper.class);
