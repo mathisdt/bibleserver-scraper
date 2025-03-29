@@ -5,8 +5,7 @@ build:
     WORKDIR /project
     COPY .git .git
     COPY pom.xml ./
-    COPY src/main src/main
-    COPY src/test src/test
+    COPY src src
     RUN TZ=Europe/Berlin mvn clean verify -U --no-transfer-progress
     SAVE ARTIFACT target AS LOCAL target
 
